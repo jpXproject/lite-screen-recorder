@@ -38,8 +38,26 @@
         const preview = document.getElementById('preview');
         const statusText = document.getElementById('statusText');
 
+        // Fungsi pembantu untuk memilih MIME type yang didukung browser
+        function getSupportedMimeType() {
+            const types = [
+                'video/webm;codecs=vp9,opus',
+                'video/webm;codecs=vp8,opus',
+                'video/webm;codecs=h264,opus',
+                'video/webm',
+                'video/mp4'
+            ];
+            for (let type of types) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return type;
+                }
+            }
+            return '';
+        }
+
         btnStart.addEventListener('click', async () => {
             try {
+                recordedChunks = [];
                 // Minta izin menangkap layar (bisa pilih seluruh layar, window, atau tab)
                 const stream = await navigator.mediaDevices.getDisplayMedia({ 
                     video: { cursor: "always" }, 
@@ -48,22 +66,32 @@
 
                 preview.srcObject = stream;
                 
-                mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+                const mimeType = getSupportedMimeType();
+                const options = mimeType ? { mimeType } : {};
+                
+                mediaRecorder = new MediaRecorder(stream, options);
 
                 mediaRecorder.ondataavailable = function(e) {
-                    if (e.data.size > 0) {
+                    if (e.data && e.data.size > 0) {
                         recordedChunks.push(e.data);
                     }
                 };
 
                 mediaRecorder.onstop = function() {
-                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    if (recordedChunks.length === 0) {
+                        statusText.innerText = 'Status: Gagal merekam (tidak ada data video).';
+                        statusText.style.color = '#a85858';
+                        return;
+                    }
+                    const blob = new Blob(recordedChunks, { type: mimeType || 'video/webm' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     document.body.appendChild(a);
                     a.style = 'display: none';
                     a.href = url;
-                    a.download = 'jpXCode_ScreenRecord_' + Math.floor(Date.now() / 1000) + '.webm';
+                    
+                    const extension = mimeType && mimeType.includes('mp4') ? '.mp4' : '.webm';
+                    a.download = 'jpXCode_ScreenRecord_' + Math.floor(Date.now() / 1000) + extension;
                     a.click();
                     window.URL.revokeObjectURL(url);
                     recordedChunks = [];
@@ -72,13 +100,15 @@
                 };
 
                 // Jika user menekan tombol "Stop Sharing" dari browser bawaan
-                stream.getVideoTracks()[0].onended = () => {
-                    if (mediaRecorder.state === 'recording') {
-                        stopRecording();
-                    }
-                };
+                if (stream.getVideoTracks().length > 0) {
+                    stream.getVideoTracks()[0].onended = () => {
+                        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                            stopRecording();
+                        }
+                    };
+                }
 
-                mediaRecorder.start();
+                mediaRecorder.start(1000); // Record in 1s slices to prevent memory loss on crash
                 btnStart.style.display = 'none';
                 btnStop.style.display = 'inline-block';
                 statusText.innerText = 'Status: 🔴 Sedang Merekam...';
@@ -92,10 +122,14 @@
         });
 
         function stopRecording() {
-            mediaRecorder.stop();
-            const tracks = preview.srcObject.getTracks();
-            tracks.forEach(track => track.stop());
-            preview.srcObject = null;
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            if (preview.srcObject) {
+                const tracks = preview.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                preview.srcObject = null;
+            }
             
             btnStart.style.display = 'inline-block';
             btnStop.style.display = 'none';
