@@ -24,6 +24,10 @@
 
 **Super-Lite Screen Recorder** adalah utilitas perekam layar mandiri (*standalone*) berkinerja tinggi yang dirancang khusus untuk bekerja tanpa perangkat lunak kelas berat (seperti OBS Studio). Dibangun menggunakan kapabilitas asli WebRTC HTML5 (*Screen Capture API*) dan diluncurkan melalui server lokal (*localhost*) untuk menembus aturan *Secure Context* di browser modern.
 
+<div align="center">
+  <b>Repository Resmi:</b> <a href="https://github.com/jpXproject/lite-screen-recorder">https://github.com/jpXproject/lite-screen-recorder</a>
+</div>
+
 ---
 
 ## ✨ Fitur Utama
@@ -84,5 +88,6 @@ Proyek ini 100% dieksekusi di sisi-klien (*Client-Side Rendering*). Seluruh pros
 <div align="center">
   <i>Dikembangkan oleh jpXCode Studio</i>
 </div>
+
 
 
