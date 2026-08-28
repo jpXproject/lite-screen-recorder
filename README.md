@@ -102,7 +102,7 @@ Aplikasi ini berjalan sepenuhnya pada sisi klien (*100% Client-Side Processing*)
 
 ---
 
-<sub><p align="right"><sup>*Signature: jpXCode Studio (jpXproject) - Autonomously built with Antigravity AI, 2026.*</sup></p></sub>
+<sub><p align="right"><sup>*Signature: jpXCode Studio (jpXproject), 2026.*</sup></p></sub>
 
 
 
