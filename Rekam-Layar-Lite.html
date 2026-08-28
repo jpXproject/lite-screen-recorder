@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lite Screen Recorder by jpXCode</title>
+    <style>
+        body { background-color: #111d1c; color: #f5eee6; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; padding: 40px; margin: 0; }
+        .container { background: #1c302f; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; border: 1px solid rgba(212,175,55,0.2); max-width: 800px; width: 100%; }
+        video { width: 100%; background: #000; border-radius: 8px; margin: 20px 0; border: 2px solid #2e5954; }
+        button { font-family: inherit; font-weight: bold; font-size: 16px; padding: 12px 24px; margin: 5px; cursor: pointer; border: none; border-radius: 8px; transition: 0.2s; }
+        #btnStart { background: #2e5954; color: white; }
+        #btnStop { background: #a85858; color: white; display: none; }
+        button:hover { filter: brightness(1.2); }
+        .status { color: #d4af37; font-size: 14px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 style="color:#d4af37; margin-top:0;">🎥 Super-Lite Screen Recorder</h2>
+        <p style="font-size:14px; color:#7f8f8b;">Tanpa OBS. Tanpa Install. 100% menggunakan engine browser bawaan Anda.</p>
+        
+        <video id="preview" autoplay muted playsinline></video>
+        
+        <div>
+            <button id="btnStart">🔴 Mulai Rekam Layar</button>
+            <button id="btnStop">⏹️ Berhenti & Simpan Video</button>
+        </div>
+        <p class="status" id="statusText">Status: Standby</p>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+        const btnStart = document.getElementById('btnStart');
+        const btnStop = document.getElementById('btnStop');
+        const preview = document.getElementById('preview');
+        const statusText = document.getElementById('statusText');
+
+        btnStart.addEventListener('click', async () => {
+            try {
+                // Minta izin menangkap layar (bisa pilih seluruh layar, window, atau tab)
+                const stream = await navigator.mediaDevices.getDisplayMedia({ 
+                    video: { cursor: "always" }, 
+                    audio: true 
+                });
+
+                preview.srcObject = stream;
+                
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+
+                mediaRecorder.ondataavailable = function(e) {
+                    if (e.data.size > 0) {
+                        recordedChunks.push(e.data);
+                    }
+                };
+
+                mediaRecorder.onstop = function() {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    document.body.appendChild(a);
+                    a.style = 'display: none';
+                    a.href = url;
+                    a.download = 'jpXCode_ScreenRecord_' + Math.floor(Date.now() / 1000) + '.webm';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    recordedChunks = [];
+                    statusText.innerText = 'Status: Video berhasil disimpan ke folder Download!';
+                    statusText.style.color = '#2e5954';
+                };
+
+                // Jika user menekan tombol "Stop Sharing" dari browser bawaan
+                stream.getVideoTracks()[0].onended = () => {
+                    if (mediaRecorder.state === 'recording') {
+                        stopRecording();
+                    }
+                };
+
+                mediaRecorder.start();
+                btnStart.style.display = 'none';
+                btnStop.style.display = 'inline-block';
+                statusText.innerText = 'Status: 🔴 Sedang Merekam...';
+                statusText.style.color = '#a85858';
+
+            } catch (err) {
+                console.error("Error: " + err);
+                statusText.innerText = 'Status: Akses rekam layar ditolak / dibatalkan.';
+                statusText.style.color = '#a85858';
+            }
+        });
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            const tracks = preview.srcObject.getTracks();
+            tracks.forEach(track => track.stop());
+            preview.srcObject = null;
+            
+            btnStart.style.display = 'inline-block';
+            btnStop.style.display = 'none';
+        }
+
+        btnStop.addEventListener('click', stopRecording);
+    </script>
+</body>
+</html>
