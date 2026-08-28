@@ -3,51 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lite Screen Recorder by jpXCode</title>
+    <title>Lite Screen Recorder Pro by jpXCode</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #111d1c; color: #f5eee6; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; padding: 40px; margin: 0; }
-        .container { background: #1c302f; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; border: 1px solid rgba(212,175,55,0.2); max-width: 800px; width: 100%; }
-        video { width: 100%; background: #000; border-radius: 8px; margin: 20px 0; border: 2px solid #2e5954; }
-        button { font-family: inherit; font-weight: bold; font-size: 16px; padding: 12px 24px; margin: 5px; cursor: pointer; border: none; border-radius: 8px; transition: 0.2s; }
-        #btnStart { background: #2e5954; color: white; }
-        #btnStop { background: #a85858; color: white; display: none; }
-        button:hover { filter: brightness(1.2); }
-        .status { color: #d4af37; font-size: 14px; margin-top: 10px; }
+        :root {
+            --bg: #090d10;
+            --card-bg: rgba(18, 26, 32, 0.85);
+            --border: rgba(0, 210, 255, 0.2);
+            --primary: #00d2ff;
+            --primary-glow: rgba(0, 210, 255, 0.35);
+            --accent: #3a7bd5;
+            --danger: #ff4b4b;
+            --danger-glow: rgba(255, 75, 75, 0.4);
+            --warning: #f5af19;
+            --text-main: #e6f1f5;
+            --text-muted: #8ba2ad;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 210, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(58, 123, 213, 0.08) 0%, transparent 40%);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            margin: 0;
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+            text-align: center;
+            border: 1px solid var(--border);
+            max-width: 860px;
+            width: 100%;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        .badge-pro {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #000;
+            font-weight: 700;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            color: #ffffff;
+            font-size: 26px;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            margin-bottom: 24px;
+        }
+
+        /* Control Options Grid */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .control-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            padding: 10px 14px;
+            border-radius: 10px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-group select {
+            width: 100%;
+            background: #111a21;
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            color: #fff;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Video Preview Area */
+        .preview-wrapper {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(0, 210, 255, 0.25);
+            overflow: hidden;
+            aspect-ratio: 16 / 9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #05080a;
+        }
+
+        .rec-indicator {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.7);
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            border: 1px solid rgba(255,75,75,0.4);
+        }
+
+        .rec-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--danger);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--danger);
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.8); }
+        }
+
+        .timer-display {
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+        }
+
+        /* Action Buttons */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #btnStart {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #041017;
+            box-shadow: 0 4px 20px var(--primary-glow);
+        }
+
+        #btnStart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 210, 255, 0.5);
+        }
+
+        #btnPause {
+            background: rgba(245, 175, 25, 0.15);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            display: none;
+        }
+
+        #btnPause:hover {
+            background: var(--warning);
+            color: #000;
+        }
+
+        #btnStop {
+            background: linear-gradient(135deg, #ff416c, var(--danger));
+            color: white;
+            display: none;
+            box-shadow: 0 4px 20px var(--danger-glow);
+        }
+
+        #btnStop:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(255, 75, 75, 0.6);
+        }
+
+        .status-box {
+            margin-top: 18px;
+            padding: 10px 16px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-muted);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .footer-sig {
+            margin-top: 24px;
+            font-size: 11px;
+            color: #556b78;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2 style="color:#d4af37; margin-top:0;">🎥 Super-Lite Screen Recorder</h2>
-        <p style="font-size:14px; color:#7f8f8b;">Tanpa OBS. Tanpa Install. 100% menggunakan engine browser bawaan Anda.</p>
-        
-        <video id="preview" autoplay muted playsinline></video>
-        
-        <div>
-            <button id="btnStart">🔴 Mulai Rekam Layar</button>
-            <button id="btnStop">⏹️ Berhenti & Simpan Video</button>
+        <div class="header-title">
+            <h2>🎥 Super-Lite Screen Recorder</h2>
+            <span class="badge-pro">PRO v2.5</span>
         </div>
-        <p class="status" id="statusText">Status: Standby</p>
+        <p class="subtitle">Perekam layar mandiri tanpa OBS. Diproses 100% lokal di browser Anda.</p>
+        
+        <!-- Settings Bar -->
+        <div class="controls-grid" id="settingsBar">
+            <div class="control-group">
+                <label for="selQuality">Kualitas Frame</label>
+                <select id="selQuality">
+                    <option value="60">60 FPS (Ultra Smooth)</option>
+                    <option value="30" selected>30 FPS (Standar)</option>
+                    <option value="15">15 FPS (Hemat Daya)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="selAudio">Sumber Audio</label>
+                <select id="selAudio">
+                    <option value="both">System + Mikrofon</option>
+                    <option value="system" selected>System Audio Saja</option>
+                    <option value="mic">Mikrofon Saja</option>
+                    <option value="mute">Mute (Tanpa Suara)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="selFormat">Format Output</label>
+                <select id="selFormat">
+                    <option value="auto" selected>Otomatis (Optimal)</option>
+                    <option value="webm">WebM (VP9/VP8)</option>
+                    <option value="mp4">MP4 (H.264/AVC)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="preview-wrapper">
+            <video id="preview" autoplay muted playsinline></video>
+            <div class="rec-indicator" id="recBadge">
+                <div class="rec-dot"></div>
+                <span>REC</span>
+                <span class="timer-display" id="timer">00:00:00</span>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button id="btnStart">🔴 Mulai Rekam Layar</button>
+            <button id="btnPause">⏸️ Jeda</button>
+            <button id="btnStop">⏹️ Berhenti & Simpan</button>
+        </div>
+
+        <div>
+            <div class="status-box" id="statusText">Status: Siap (Standby)</div>
+        </div>
+
+        <div class="footer-sig">
+            Developed by jpXCode Studio (jpxcode.pages.dev)
+        </div>
     </div>
 
     <script>
         let mediaRecorder;
         let recordedChunks = [];
+        let timerInterval;
+        let elapsedSeconds = 0;
+        let isPaused = false;
+        let combinedStream = null;
+
         const btnStart = document.getElementById('btnStart');
+        const btnPause = document.getElementById('btnPause');
         const btnStop = document.getElementById('btnStop');
         const preview = document.getElementById('preview');
         const statusText = document.getElementById('statusText');
+        const recBadge = document.getElementById('recBadge');
+        const timerDisplay = document.getElementById('timer');
+        const settingsBar = document.getElementById('settingsBar');
 
-        // Fungsi pembantu untuk memilih MIME type yang didukung browser
-        function getSupportedMimeType() {
-            const types = [
+        const selQuality = document.getElementById('selQuality');
+        const selAudio = document.getElementById('selAudio');
+        const selFormat = document.getElementById('selFormat');
+
+        function formatTimer(sec) {
+            const hrs = String(Math.floor(sec / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+            const secs = String(sec % 60).padStart(2, '0');
+            return `${hrs}:${mins}:${secs}`;
+        }
+
+        function startTimer() {
+            elapsedSeconds = 0;
+            timerDisplay.innerText = "00:00:00";
+            recBadge.style.display = 'flex';
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    elapsedSeconds++;
+                    timerDisplay.innerText = formatTimer(elapsedSeconds);
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            recBadge.style.display = 'none';
+        }
+
+        function getSupportedMimeType(preferredFormat) {
+            const webmTypes = [
                 'video/webm;codecs=vp9,opus',
                 'video/webm;codecs=vp8,opus',
                 'video/webm;codecs=h264,opus',
-                'video/webm',
+                'video/webm'
+            ];
+            const mp4Types = [
+                'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
                 'video/mp4'
             ];
-            for (let type of types) {
+
+            let candidates = [];
+            if (preferredFormat === 'mp4') {
+                candidates = [...mp4Types, ...webmTypes];
+            } else if (preferredFormat === 'webm') {
+                candidates = [...webmTypes, ...mp4Types];
+            } else {
+                candidates = [...webmTypes, ...mp4Types];
+            }
+
+            for (let type of candidates) {
                 if (MediaRecorder.isTypeSupported(type)) {
                     return type;
                 }
@@ -58,18 +400,45 @@
         btnStart.addEventListener('click', async () => {
             try {
                 recordedChunks = [];
-                // Minta izin menangkap layar (bisa pilih seluruh layar, window, atau tab)
-                const stream = await navigator.mediaDevices.getDisplayMedia({ 
-                    video: { cursor: "always" }, 
-                    audio: true 
+                isPaused = false;
+                const fps = parseInt(selQuality.value) || 30;
+                const audioPref = selAudio.value;
+
+                // 1. Tangkap Stream Layar
+                const displayStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { 
+                        frameRate: { ideal: fps, max: fps },
+                        cursor: "always"
+                    },
+                    audio: (audioPref === 'system' || audioPref === 'both')
                 });
 
-                preview.srcObject = stream;
-                
-                const mimeType = getSupportedMimeType();
+                let tracks = [...displayStream.getVideoTracks()];
+
+                // 2. Tangkap Mikrofon jika dipilih
+                if (audioPref === 'mic' || audioPref === 'both') {
+                    try {
+                        const micStream = await navigator.mediaDevices.getUserMedia({
+                            audio: { echoCancellation: true, noiseSuppression: true }
+                        });
+                        tracks.push(...micStream.getAudioTracks());
+                    } catch (e) {
+                        console.warn("Mikrofon tidak diizinkan atau tidak ditemukan:", e);
+                    }
+                }
+
+                // Tambahkan audio sistem jika ada
+                if (audioPref === 'system' || audioPref === 'both') {
+                    tracks.push(...displayStream.getAudioTracks());
+                }
+
+                combinedStream = new MediaStream(tracks);
+                preview.srcObject = combinedStream;
+
+                const mimeType = getSupportedMimeType(selFormat.value);
                 const options = mimeType ? { mimeType } : {};
-                
-                mediaRecorder = new MediaRecorder(stream, options);
+
+                mediaRecorder = new MediaRecorder(combinedStream, options);
 
                 mediaRecorder.ondataavailable = function(e) {
                     if (e.data && e.data.size > 0) {
@@ -78,46 +447,73 @@
                 };
 
                 mediaRecorder.onstop = function() {
+                    stopTimer();
                     if (recordedChunks.length === 0) {
-                        statusText.innerText = 'Status: Gagal merekam (tidak ada data video).';
-                        statusText.style.color = '#a85858';
+                        statusText.innerText = 'Status: Rekaman dibatalkan (tidak ada data).';
+                        statusText.style.color = '#ff4b4b';
                         return;
                     }
+
                     const blob = new Blob(recordedChunks, { type: mimeType || 'video/webm' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     document.body.appendChild(a);
                     a.style = 'display: none';
                     a.href = url;
-                    
-                    const extension = mimeType && mimeType.includes('mp4') ? '.mp4' : '.webm';
-                    a.download = 'jpXCode_ScreenRecord_' + Math.floor(Date.now() / 1000) + extension;
+
+                    const ext = mimeType && mimeType.includes('mp4') ? '.mp4' : '.webm';
+                    a.download = 'jpXCode_ScreenRecord_' + Math.floor(Date.now() / 1000) + ext;
                     a.click();
                     window.URL.revokeObjectURL(url);
                     recordedChunks = [];
-                    statusText.innerText = 'Status: Video berhasil disimpan ke folder Download!';
-                    statusText.style.color = '#2e5954';
+
+                    statusText.innerText = 'Status: ✅ File rekaman tersimpan otomatis!';
+                    statusText.style.color = '#00d2ff';
                 };
 
-                // Jika user menekan tombol "Stop Sharing" dari browser bawaan
-                if (stream.getVideoTracks().length > 0) {
-                    stream.getVideoTracks()[0].onended = () => {
+                // Browser "Stop Sharing" Bar Integration
+                if (displayStream.getVideoTracks().length > 0) {
+                    displayStream.getVideoTracks()[0].onended = () => {
                         if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                             stopRecording();
                         }
                     };
                 }
 
-                mediaRecorder.start(1000); // Record in 1s slices to prevent memory loss on crash
+                mediaRecorder.start(1000);
+                startTimer();
+
                 btnStart.style.display = 'none';
-                btnStop.style.display = 'inline-block';
-                statusText.innerText = 'Status: 🔴 Sedang Merekam...';
-                statusText.style.color = '#a85858';
+                btnPause.style.display = 'inline-flex';
+                btnStop.style.display = 'inline-flex';
+                settingsBar.style.opacity = '0.5';
+                settingsBar.style.pointerEvents = 'none';
+
+                statusText.innerText = 'Status: 🔴 Sedang Merekam Layar...';
+                statusText.style.color = '#ff4b4b';
 
             } catch (err) {
-                console.error("Error: " + err);
-                statusText.innerText = 'Status: Akses rekam layar ditolak / dibatalkan.';
-                statusText.style.color = '#a85858';
+                console.error(err);
+                statusText.innerText = 'Status: Akses rekam layar dibatalkan / tidak diizinkan.';
+                statusText.style.color = '#ff4b4b';
+            }
+        });
+
+        btnPause.addEventListener('click', () => {
+            if (!mediaRecorder) return;
+
+            if (mediaRecorder.state === 'recording') {
+                mediaRecorder.pause();
+                isPaused = true;
+                btnPause.innerText = '▶️ Lanjutkan';
+                statusText.innerText = 'Status: ⏸️ Rekaman Dijeda';
+                statusText.style.color = '#f5af19';
+            } else if (mediaRecorder.state === 'paused') {
+                mediaRecorder.resume();
+                isPaused = false;
+                btnPause.innerText = '⏸️ Jeda';
+                statusText.innerText = 'Status: 🔴 Melanjutkan Rekaman...';
+                statusText.style.color = '#ff4b4b';
             }
         });
 
@@ -125,17 +521,22 @@
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                 mediaRecorder.stop();
             }
-            if (preview.srcObject) {
-                const tracks = preview.srcObject.getTracks();
-                tracks.forEach(track => track.stop());
-                preview.srcObject = null;
+            if (combinedStream) {
+                combinedStream.getTracks().forEach(track => track.stop());
+                combinedStream = null;
             }
-            
-            btnStart.style.display = 'inline-block';
+            preview.srcObject = null;
+
+            btnStart.style.display = 'inline-flex';
+            btnPause.style.display = 'none';
             btnStop.style.display = 'none';
+            btnPause.innerText = '⏸️ Jeda';
+            settingsBar.style.opacity = '1';
+            settingsBar.style.pointerEvents = 'all';
         }
 
         btnStop.addEventListener('click', stopRecording);
     </script>
 </body>
 </html>
+
